@@ -1,15 +1,16 @@
-name: Bug Report
-description: Create a report to help us improve
-title: "bug: "
+title: bug: KubeStellar fails to sync workloads between clusters intermittently
 labels:
   - kind/bug
+
 body:
-  - type: markdown
-    attributes:
-      value: |
-        Thanks for taking the time to fill out this bug report!
-        
-        Here is how you can help us serve you better:
+  type: markdown
+  attributes:
+    value: |
+      Thanks for taking the time to fill out this bug report!
+
+      ```
+      Here is how you can help us serve you better:
+      ```
 
   - type: textarea
     id: description
@@ -17,7 +18,7 @@ body:
       label: Describe the bug
       description: Please provide a clear and concise description of the bug. See ["Making a Good Trouble Report"](https://docs.kubestellar.io/unreleased-development/direct/troubleshooting/#making-a-good-trouble-report).
       placeholder: |
-        You might also look at the rest of the "Troubleshooting" page.
+        There is an intermittent issue where workloads deployed to the central cluster are not synchronized to member clusters. This happens roughly 30% of the time after applying a new WorkloadPlacement.
     validations:
       required: true
 
@@ -25,22 +26,31 @@ body:
     id: snapshot
     attributes:
       label: Output from KubeStellar-Snapshot.sh
-      description: | 
+      description: |
         Run kubestellar-snapshot.sh from the scripts directory and paste output here.
         Alternatively you can run the script remotely
-        bash <(curl -s https://raw.githubusercontent.com/kubestellar/kubestellar/refs/heads/main/scripts/kubestellar-snapshot.sh) -V -Y -L
+        bash <(curl -s [https://raw.githubusercontent.com/kubestellar/kubestellar/refs/heads/main/scripts/kubestellar-snapshot.sh](https://raw.githubusercontent.com/kubestellar/kubestellar/refs/heads/main/scripts/kubestellar-snapshot.sh)) -V -Y -L
         This will create kubestellar-snapshot.tar.gz which can be dragged and dropped into this text area.
-      
+      placeholder: |
+        $ bash <(curl -s https://raw.githubusercontent.com/kubestellar/kubestellar/refs/heads/main/scripts/kubestellar-snapshot.sh) -V -Y -L
+        Snapshot collected to kubestellar-snapshot.tar.gz
+
+        Relevant logs:
+        [ERROR] syncer-controller: failed to sync WorkloadPlacement wp-sample: context deadline exceeded
+        [INFO] syncer-controller: retrying in 30s
+    validations:
+      required: true
+
   - type: textarea
     id: reproducing
     attributes:
       label: Steps To Reproduce
       description: Steps to reproduce the behavior.
       placeholder: |
-        1. Go to '...'
-        2. Click on '...'
-        3. Scroll down to '...'
-        4. See the error
+        1. Deploy a new `WorkloadPlacement` in the central cluster.
+        2. Confirm the associated `SyncTarget` is healthy.
+        3. Observe that sometimes the workloads do not appear in the member cluster.
+        4. Check controller logs; see "context deadline exceeded".
     validations:
       required: true
 
@@ -49,8 +59,10 @@ body:
     attributes:
       label: Expected Behavior
       description: A clear and concise description of what you expected to happen.
-    validations:
-      required: true
+      validations:
+        required: true
+      placeholder: |
+        When a WorkloadPlacement is applied, the workload should consistently appear in all targeted clusters within a few seconds.
 
   - type: checkboxes
     id: contribute
@@ -58,8 +70,8 @@ body:
       label: Want to contribute?
       options:
         - label: I would like to work on this issue.
-          required: false
-          
+      required: false
+
   - type: textarea
     id: additional
     attributes:
@@ -67,3 +79,5 @@ body:
       description: |
         Add any other context about the problem here.
         If you are following some instructions, please give a pointer to them.
+      placeholder: |
+        I followed the [Getting Started guide](https://docs.kubestellar.io/unreleased-development/direct/quickstart/) to set up my environment. I'm testing across three clusters using Kind on Ubuntu 22.04.
